@@ -298,11 +298,10 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
         boolean anyhost = false;
         if (NetUtils.isInvalidLocalHost(host)) {
             anyhost = true;
-            try {
-                host = InetAddress.getLocalHost().getHostAddress();
-            } catch (UnknownHostException e) {
-                logger.warn(e.getMessage(), e);
-            }
+            
+            host = System.getenv("CF_INSTANCE_IP");
+            logger.info("cf: get host "+host);
+           
             if (NetUtils.isInvalidLocalHost(host)) {
                 if (registryURLs != null && registryURLs.size() > 0) {
                     for (URL registryURL : registryURLs) {
@@ -333,6 +332,14 @@ public class ServiceConfig<T> extends AbstractServiceConfig {
         if (provider != null && (port == null || port == 0)) {
             port = provider.getPort();
         }
+  
+        String ports = System.getenv("PORT");
+
+        logger.info("cf: get port "+ports);
+        if (ports != null) {
+          port = Integer.valueOf(ports).intValue();
+        }
+
         final int defaultPort = ExtensionLoader.getExtensionLoader(Protocol.class).getExtension(name).getDefaultPort();
         if (port == null || port == 0) {
             port = defaultPort;
